@@ -30,33 +30,39 @@ function colocaMinas(totalMinas, tablero) {
                 }
             }
         }
+        for(let i = 0; i < sizeTablero; i++) {
+            for(let j = 0; j < sizeTablero; j++) {
+                if(i === randX && j === randY){
+                    adyacente(tablero, i, j);
+                }
+            }
+        }
         // numMinas++;
         totalMinas --;
     }
 }
 
 function adyacente(tablero, posX, posY) {
+    let adyacentes = 0;
     let n = tablero.length;
 
-    for(let i = 0; i < n; i++) {
-        for(let j = 0; j < n; j++) {
-            //arriba
-            if (posX > 0 && tablero[posX-1][posY] === "*") tablero[posX-1][posY] = 1;
-            //abajo
-            if (posX < n - 1 && tablero[posX+1][posY] === "*") tablero[posX-1][posY] = 1;
-            //izq
-            if (posY > 0 && tablero[posX][posY-1] === "*") tablero[posX-1][posY] = 1;
-            //derecha
-            if (posY < n - 1 && tablero[posX][posY+1] === "*") tablero[posX-1][posY] = 1;
+    //arriba
+    if (posX > 0 && tablero[posX-1][posY] === "*") adyacentes++;
+    //abajo
+    if (posX < n - 1 && tablero[posX+1][posY] === "*") adyacentes++;
+    //izq
+    if (posY > 0 && tablero[posX][posY-1] === "*") adyacentes++;
+    //derecha
+    if (posY < n - 1 && tablero[posX][posY+1] === "*") adyacentes++;
 
-            //diagonal
-            if (posX > 0 && posY > 0 && tablero[posX-1][posY-1] === "*") tablero[posX-1][posY] = 1;
-            if (posX > 0 && posY < n - 1 && tablero[posX-1][posY+1] === "*") tablero[posX-1][posY] = 1;
-            if (posX < n - 1 && posY > 0 && tablero[posX+1][posY-1] === "*") tablero[posX-1][posY] = 1;
-            if (posX < n - 1 && posY < n - 1 && tablero[posX+1][posY+1] === "*") tablero[posX-1][posY] = 1;
-        }
-    }
-    return tablero;
+    //diagonal
+    if (posX > 0 && posY > 0 && tablero[posX-1][posY-1] === "*") adyacentes++;
+    if (posX > 0 && posY < n - 1 && tablero[posX-1][posY+1] === "*") adyacentes++;
+    if (posX < n - 1 && posY > 0 && tablero[posX+1][posY-1] === "*") adyacentes++;
+    if (posX < n - 1 && posY < n - 1 && tablero[posX+1][posY+1] === "*") adyacentes++;
+
+    tablero[posX][posY] = adyacentes;
+    // return tablero;
 }
 
 
@@ -107,6 +113,7 @@ function imprimieTablero(tablero, tag) {
 
 
 function buscaminas(){
+    let fin = false;
     let tablero = [];
     let size = pideSizeTablero();
     let numMinas = pideNumMinas();
@@ -118,10 +125,23 @@ function buscaminas(){
 
     colocaMinas(numMinas, tablero);
 
+    // while(!fin){
+    //
+    // }
+
     posX = pideCoordenada("X", size);
     posY = pideCoordenada("Y", size);
 
     console.log(`Coordenadas introducidas: (${posX},${posY})`);
 
     imprimieTablero(tablero, "");
+
+
+    //tablero prueba
+    // let tablero2 = [...tablero];
+    // tablero2 = adyacente(tablero, posX, posY);
+    //
+    // console.log("Después de meter la coordenada:");
+    //
+    // imprimieTablero(tablero2);
 }
