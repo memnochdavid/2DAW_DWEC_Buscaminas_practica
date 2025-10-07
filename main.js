@@ -6,63 +6,8 @@ function getRandomInt(max) {
 }
 
 function creaTablero(size) {
+    //esta forma de crear un array con valores deseados la vi en internet, paar el ejercicio del juego de la vida
     return Array.from({ length: size }, () => Array(size).fill("X"));
-}
-
-function colocaMinas(totalMinas, tablero) {
-    // let numMinas = 0;
-    let sizeTablero = tablero.length;
-    let randX = 0;
-    let randY = 0;
-
-    while(totalMinas > 0){
-        randX = getRandomInt(tablero.length-1);
-        randY = getRandomInt(tablero.length-1);
-
-        // console.log("Mina " + numMinas);
-        // console.log("RandX: " + randX);
-        // console.log("RandY: " + randY);
-
-        for(let i = 0; i < sizeTablero; i++) {
-            for(let j = 0; j < sizeTablero; j++) {
-                if(i === randX && j === randY){
-                    tablero[i][j] = "*";
-                }
-            }
-        }
-        for(let i = 0; i < sizeTablero; i++) {
-            for(let j = 0; j < sizeTablero; j++) {
-                if(i === randX && j === randY){
-                    adyacente(tablero, i, j);
-                }
-            }
-        }
-        // numMinas++;
-        totalMinas --;
-    }
-}
-
-function adyacente(tablero, posX, posY) {
-    let adyacentes = 0;
-    let n = tablero.length;
-
-    //arriba
-    if (posX > 0 && tablero[posX-1][posY] === "*") adyacentes++;
-    //abajo
-    if (posX < n - 1 && tablero[posX+1][posY] === "*") adyacentes++;
-    //izq
-    if (posY > 0 && tablero[posX][posY-1] === "*") adyacentes++;
-    //derecha
-    if (posY < n - 1 && tablero[posX][posY+1] === "*") adyacentes++;
-
-    //diagonal
-    if (posX > 0 && posY > 0 && tablero[posX-1][posY-1] === "*") adyacentes++;
-    if (posX > 0 && posY < n - 1 && tablero[posX-1][posY+1] === "*") adyacentes++;
-    if (posX < n - 1 && posY > 0 && tablero[posX+1][posY-1] === "*") adyacentes++;
-    if (posX < n - 1 && posY < n - 1 && tablero[posX+1][posY+1] === "*") adyacentes++;
-
-    tablero[posX][posY] = adyacentes;
-    // return tablero;
 }
 
 
@@ -87,14 +32,6 @@ function pideSizeTablero() {
         alert("Input inválido. Sólo números positivos mayores o iguales a 5");
     }
 }
-function pideNumMinas(){
-    let minas;
-    while (true) {
-        minas = parseInt(prompt("Número de minas: "));
-        if (validaInput(minas,2)) return minas;
-        alert("Input inválido. Sólo números positivos mayores o iguales a 1");
-    }
-}
 
 function pideCoordenada(tag, sizeTablero){
     let pos;
@@ -105,43 +42,152 @@ function pideCoordenada(tag, sizeTablero){
     }
 }
 
-function imprimieTablero(tablero, tag) {
-    console.log(tag);
-    console.table(tablero);
+
+
+function colocaMinas(tablero, cantidad) {//coloca minas deseadas en posición random dentro del tablero
+    let size = tablero.length;
+    let minasColocadas = 0;//contador
+
+    while (minasColocadas < cantidad) {
+        let x = getRandomInt(size);
+        let y = getRandomInt(size);
+
+        if (tablero[x][y] !== "*") {//si no es una mina
+            tablero[x][y] = "*";//pone una mina
+            minasColocadas++;//aumenta el total
+        }
+    }
+}
+
+function contarMinasAdyacentes(tablero, posX, posY) {
+    let size = tablero.length;
+    let total = 0;
+
+    //recorre desde la anterior a la siguiente fila
+    for (let i = -1; i <= 1; i++) {
+        //recorre desde la anterior a la siguiente columna
+        for (let j = -1; j <= 1; j++) {
+            if (i === 0 && j === 0) continue;//se salta la casilla que llega, sólo comprobará las adyacentes
+
+            //se mueve por las casillas que rodean a (posX,posY)
+            let x = posX + i;
+            let y = posY + j;
+
+            if (x >= 0 && x < size && y >= 0 && y < size && tablero[x][y] === "*") { //si se sale del tablero, no entra
+                total++;//acumula los *
+            }
+        }
+    }
+    return total;
+}
+
+function generaAdyacentes(tablero) {//rellena las casillas que rodean a las minas
+    let size = tablero.length;
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (tablero[i][j] !== "*") {
+                //acumula cuántas minas hay
+                tablero[i][j] = contarMinasAdyacentes(tablero, i, j); //el valor de la casilla es el total de minas adyacentes
+            }
+        }
+    }
+}
+
+//hace lo que dice
+function mostrarTablero(tableroVisible) {
+    console.table(tableroVisible);
+}
+function compruebaAdyacentes(tableroReal, tableroVisible, posX, posY) {
+    let size = tableroReal.length;
+    //comprueba los límites del tablero
+    if (posX < 0 || posX >= size || posY < 0 || posY >= size) return;
+    //comprueba si ya se ha elegido
+    if (tableroVisible[posX][posY] !== "X") return;
+
+    //se altera el tablero visible
+    let valor = tableroReal[posX][posY]; //coge el valor de la casilla elegida
+    tableroVisible[posX][posY] = valor;//lo asigna al tablero visible en la misma pos
+
+    //si es una casilla vacía (0) revela las adyacentes
+    if (valor === 0) {
+        //recorre desde la anterior a la siguiente fila
+        for (let i = -1; i <= 1; i++) {
+            //recorre desde la anterior a la siguiente columna
+            for (let j = -1; j <= 1; j++) {
+                if (i !== 0 || j !== 0) {//se salta la casilla actual
+                    //se llama a sí misma, pero con las posiciones que rodean a la casilla en cuestión
+                    compruebaAdyacentes(tableroReal, tableroVisible, posX + i, posY + j);
+                }
+            }
+        }
+    }
+}
+
+function victoria(tableroReal, tableroVisible) {
+    let size = tableroReal.length;
+
+    //recorre tó el tablero
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            //si hay alguna mina descubierta o casillas sin elegir, aún no has ganado
+            if (tableroReal[i][j] !== "*" && tableroVisible[i][j] === "X") {
+                return false;
+            }
+        }
+    }
+    return true;//has ganado
 }
 
 
 
-function buscaminas(){
-    let fin = false;
-    let tablero = [];
-    let size = pideSizeTablero();
-    let numMinas = pideNumMinas();
+function buscaminas() {
+    let size = pideSizeTablero(); //crea matriz simétrica con tamaño deseado
+
+    //coordenadas
     let posX;
-    let posY
+    let posY;
 
+    //número proporcional de minaas
+    let numMinas = Math.floor(size * size * 0.2);
+    alert(`Se colocarán ${numMinas} minas.`);
 
-    tablero = creaTablero(size);
+    //el tablero que no se muestra
+    let tableroReal = creaTablero(size);
 
-    colocaMinas(numMinas, tablero);
+    //posiciona las minas aleatoriamente
+    colocaMinas(tableroReal, numMinas);
+    //pone los números adyacentes a las minas
+    generaAdyacentes(tableroReal);
 
-    // while(!fin){
-    //
-    // }
+    //tablero que se mostrará
+    let tableroVisible = creaTablero(size);
+    let fin = false;//condición de victoria/derrota
 
-    posX = pideCoordenada("X", size);
-    posY = pideCoordenada("Y", size);
+    while (!fin) {
+        mostrarTablero(tableroVisible);
+        //pide coordenadas
+        posX = pideCoordenada("X", size);
+        posY = pideCoordenada("Y", size);
+        console.log(`Última casilla: (${posX},${posY})`);
+        console.clear();//va limpiando
 
-    console.log(`Coordenadas introducidas: (${posX},${posY})`);
+        //si cae en una mina
+        if (tableroReal[posX][posY] === "*") {
+            alert("¡BOOM! Has perdido.");
+            mostrarTablero(tableroReal);
+            fin = true; //pierdes
+            break;//termina
+        } else {
+            //si lo que elige no es una mina
+            compruebaAdyacentes(tableroReal, tableroVisible, posX, posY);
 
-    imprimieTablero(tablero, "");
+            //comprueba victoria en cada turno
+            if (victoria(tableroReal, tableroVisible)) {
+                console.log(`Última casilla: (${posX},${posY})`);
+                alert("Enhorabuena, has ganado!");
+                fin = true;//ganas
+            }
+        }
 
-
-    //tablero prueba
-    // let tablero2 = [...tablero];
-    // tablero2 = adyacente(tablero, posX, posY);
-    //
-    // console.log("Después de meter la coordenada:");
-    //
-    // imprimieTablero(tablero2);
+    }
 }
