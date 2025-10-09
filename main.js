@@ -1,5 +1,3 @@
-//global
-// var tablero = [];
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -85,8 +83,8 @@ function generaAdyacentes(tablero) {//rellena las casillas que rodean a las mina
     let size = tablero.length;
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            if (tablero[i][j] !== "*") {
-                //acumula cuántas minas hay
+            if (tablero[i][j] !== "*") {//omite reemplazar las minas
+                //asigna cuántas minas adyacentes tiene la casilla
                 tablero[i][j] = contarMinasAdyacentes(tablero, i, j); //el valor de la casilla es el total de minas adyacentes
             }
         }
@@ -138,11 +136,18 @@ function victoria(tableroReal, tableroVisible) {
     return true;//has ganado
 }
 
-
+//desafío opcional
+function objetoPartida(tablero, numMinas, intentos){
+    return {
+        tablero: tablero,
+        minasRestantes: numMinas,
+        movimientos: intentos
+    }
+}
 
 function buscaminas() {
     let size = pideSizeTablero(); //crea matriz simétrica con tamaño deseado
-
+    let turnos = 0;
     //coordenadas
     let posX;
     let posY;
@@ -168,6 +173,7 @@ function buscaminas() {
         //pide coordenadas
         posX = pideCoordenada("X", size);
         posY = pideCoordenada("Y", size);
+        turnos ++;
         console.log(`Última casilla: (${posX},${posY})`);
         console.clear();//va limpiando
 
@@ -175,6 +181,8 @@ function buscaminas() {
         if (tableroReal[posX][posY] === "*") {
             alert("¡BOOM! Has perdido.");
             mostrarTablero(tableroReal);
+            //desafío opcional
+            console.log("Resumen de la Partida", objetoPartida(tableroReal, numMinas, turnos));
             fin = true; //pierdes
             break;//termina
         } else {
@@ -185,9 +193,10 @@ function buscaminas() {
             if (victoria(tableroReal, tableroVisible)) {
                 console.log(`Última casilla: (${posX},${posY})`);
                 alert("Enhorabuena, has ganado!");
+                //desafío opcional
+                console.log("Resumen de la Partida", objetoPartida(tableroReal, numMinas, turnos));
                 fin = true;//ganas
             }
         }
-
     }
 }
