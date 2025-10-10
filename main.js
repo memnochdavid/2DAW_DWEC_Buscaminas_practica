@@ -57,7 +57,7 @@ function colocaMinas(tablero, cantidad) {//coloca minas deseadas en posición ra
     }
 }
 
-function contarMinasAdyacentes(tablero, posX, posY) {
+function contarMinasAdyacentes(tablero, posX, posY) {//sólo devuelve el número de minas adyacentes a la casilla que recibe
     let size = tablero.length;
     let total = 0;
 
@@ -71,7 +71,7 @@ function contarMinasAdyacentes(tablero, posX, posY) {
             let x = posX + i;
             let y = posY + j;
 
-            if (x >= 0 && x < size && y >= 0 && y < size && tablero[x][y] === "*") { //si se sale del tablero, no entra
+            if (x >= 0 && x < size && y >= 0 && y < size && tablero[x][y] === "*") { //si se sale del tablero o es una mina, no entra
                 total++;//acumula los *
             }
         }
@@ -137,66 +137,103 @@ function victoria(tableroReal, tableroVisible) {
 }
 
 //desafío opcional
-function objetoPartida(tablero, numMinas, intentos){
+function objetoPartida(tableroReal, tableroVisible, numMinas, intentos){
     return {
-        tablero: tablero,
+        tableroReal: tableroReal,
+        tableroVisible: tableroVisible,
         minasRestantes: numMinas,
         movimientos: intentos
     }
 }
 
-function buscaminas() {
-    let size = pideSizeTablero(); //crea matriz simétrica con tamaño deseado
-    let turnos = 0;
-    //coordenadas
-    let posX;
-    let posY;
+function isEmpty(val){//robado de internet - comprueba si una variable está vacía, está indefinida o tiene longitud cero
+    return (val === undefined || val == null || val.length <= 0);
+}
 
-    //número proporcional de minaas
-    let numMinas = Math.floor(size * size * 0.2);
+let juego = {
+    iniciado: false,
+    size: 0,
+    turnos: 0,
+    numMinas: 0,
+    tableroReal: [],
+    tableroVisible: [],
+    fin: false,
+};
+
+function iniciarJuego() {//primer turno
+    let size = pideSizeTablero();//tamaño del tablero
+    let numMinas = Math.floor(size * size * 0.2);//cantidad de minas proporcional
+
     alert(`Se colocarán ${numMinas} minas.`);
 
-    //el tablero que no se muestra
-    let tableroReal = creaTablero(size);
+    let tableroReal = creaTablero(size);//tablero interno
+    colocaMinas(tableroReal, numMinas);//posiciona la misnas en lugares random
+    generaAdyacentes(tableroReal);//rellena el resto de casillas dependiendo de la cantidad de minas que rodean a cada una
+    let tableroVisible = creaTablero(size);//el tablero de juego
 
-    //posiciona las minas aleatoriamente
-    colocaMinas(tableroReal, numMinas);
-    //pone los números adyacentes a las minas
-    generaAdyacentes(tableroReal);
+    //objeto de la partida
+    juego = {
+        iniciado: true,
+        size,
+        turnos: 0,
+        numMinas,
+        tableroReal,
+        tableroVisible,
+        fin: false
+    };
 
-    //tablero que se mostrará
-    let tableroVisible = creaTablero(size);
-    let fin = false;//condición de victoria/derrota
 
-    while (!fin) {
-        mostrarTablero(tableroVisible);
-        //pide coordenadas
-        posX = pideCoordenada("X", size);
-        posY = pideCoordenada("Y", size);
-        turnos ++;
-        console.log(`Última casilla: (${posX},${posY})`);
-        console.clear();//va limpiando
+    mostrarTablero(tableroVisible);
+}
 
-        //si cae en una mina
-        if (tableroReal[posX][posY] === "*") {
-            alert("¡BOOM! Has perdido.");
-            mostrarTablero(tableroReal);
-            //desafío opcional
-            console.log("Resumen de la Partida", objetoPartida(tableroReal, numMinas, turnos));
-            fin = true; //pierdes
-            break;//termina
-        } else {
-            //si lo que elige no es una mina
-            compruebaAdyacentes(tableroReal, tableroVisible, posX, posY);
+function siguienteTurno() {//avanza el turno
+    if (!juego.iniciado || juego.fin) return;
 
-            //comprueba victoria en cada turno
-            if (victoria(tableroReal, tableroVisible)) {
-                console.log(`Última casilla: (${posX},${posY})`);
-                alert("Enhorabuena, has ganado!");
-                //desafío opcional
-                console.log("Resumen de la Partida", objetoPartida(tableroReal, numMinas, turnos));
-                fin = true;//ganas
-            }
-        }
+    let posX = pideCoordenada("X", juego.size);
+    let posY = pideCoordenada("Y", juego.size);
+
+    juego.turnos++;
+
+    if (juego.tableroReal[posX][posY] === "*") {//pierdes y termina
+        alert("¡BOOM! Has perdido.");
+        mostrarTablero(juego.tableroReal);
+        juego.fin = true;
+        return;
+    }
+
+
+    compruebaAdyacentes(juego.tableroReal, juego.tableroVisible, posX, posY);
+
+    if (victoria(juego.tableroReal, juego.tableroVisible)) {//ganas
+        alert("¡Has ganado!");
+        juego.fin = true;
+    }
+
+    mostrarTablero(juego.tableroVisible);
+}
+
+function botonGuardar() {
+    save = objetoPartida(
+        JSON.parse(JSON.stringify(juego.tableroReal)),
+        JSON.parse(JSON.stringify(juego.tableroVisible)),
+        juego.numMinas,
+        juego.turnos
+    );
+    console.table("Partida guardada:", save)//debug
+    alert("Partida guardada!");
+}
+
+function botonCargar() {
+    if (!isEmpty(save)) {
+        juego.tableroReal = JSON.parse(JSON.stringify(save.tableroReal));
+        juego.tableroVisible = JSON.parse(JSON.stringify(save.tableroVisible));
+        juego.numMinas = save.minasRestantes;
+        juego.turnos = save.movimientos;
+        alert("Partida cargada!");
+        mostrarTablero(juego.tableroVisible);
+        console.table("Partida cargada:", save)//debug
+    } else {
+        alert("No hay partida guardada!");
     }
 }
+
