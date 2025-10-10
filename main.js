@@ -211,6 +211,7 @@ function siguienteTurno() {//avanza el turno
 
     mostrarTablero(juego.tableroVisible);
 }
+var save;
 
 function botonGuardar() {
     save = objetoPartida(
@@ -237,3 +238,31 @@ function botonCargar() {
     }
 }
 
+function tableroHTML(tablero){
+    let output = "";
+
+    for (let i = 0; i < tablero.length; i++) {
+        output += "<tr>"; // empieza una nueva fila
+        for (let j = 0; j < tablero[i].length; j++) {
+            output += "<td style='background-color: whitesmoke; border: none; width:auto; height:auto;'>"+meteIcono(tablero[i][j])+"</td>";
+        }
+        output += "</tr>"; // cierra la fila
+    }
+
+    // Inserta el HTML dentro de la tabla
+    document.getElementById("tabla").innerHTML = output;
+}
+
+function meteIcono(valorCasillas){
+    switch (valorCasillas) {
+        case "X":
+            return "<img style='width: 100px; height: 100px;' src=\"./img/x.gif\" alt=\"\">";
+        case "*":
+            return "<img style='width: 100px; height: 100px;' src=\"./img/mina.gif\" alt=\"\">";
+        case 0:
+            return "<div style='width: 100px; height: 100px; background-color: rgba(0,0,0,0)\></div>";
+        default:
+            return valorCasillas;
+
+    }
+}

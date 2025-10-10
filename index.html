@@ -10,6 +10,12 @@
 <div id="ejercicio">
     <div>
         <h1>Buscaminas en Consola</h1>
+
+        <div id="tablero">
+            <table id="tabla" style="width:100%; height:500px; margin:0; border: 2px solid black; background-color: rgba(0,0,0,0)" onclick="tableroHTML(juego.tableroVisible)"></table>
+
+        </div>
+
         <div class="botones">
             <button onclick="iniciarJuego()">Ejecutar</button>
             <button onclick="siguienteTurno()">Siguiente Turno</button>
